@@ -1,0 +1,2 @@
+com.learndotcms.plugins.ircsupport
+==================================
