@@ -1,0 +1,145 @@
+#set($dotCMSIRCNick = $cookietool.get('dotCMSIRCNick').value)
+#if($dotCMSIRCNick)
+	#set($enableNick = "nick=$!{dotCMSIRCNick}&")
+#end
+#set($ircPopupW = $cookietool.get('ircPopupW').value)
+#set($ircPopupH = $cookietool.get('ircPopupH').value)
+#if(!$ircPopupW || $ircPopupW.length() == 0)
+	#set($ircPopupW = 640)
+#end
+#if(!$ircPopupH || $ircPopupH.length() == 0)
+	#set($ircPopupH = 400)
+#end
+#set($ircPopupIframe = $math.sub($ircPopupH,22))
+<style type="text/css">
+${esc.h}credit {
+	font-size:.8em;
+	position:absolute;
+	right: 0;
+}
+${esc.h}ircButtons {
+	position:relative;
+	text-align:center;
+}
+${esc.h}ircContainer {
+	margin:1em auto;
+	width:80%
+}
+	${esc.h}ircContainer iframe {
+		border:1px solid #ccc;
+		height:400px;
+		margin:1em 0 2em;
+		width:100%;
+	}
+.subNavCrumbTrail {
+	margin:-7px 0px 10px;
+}
+</style>
+<script type="text/javascript">
+    dojo.require("dojo.cookie");
+	dojo.require("dijit.form.Button");
+    dojo.require("dijit.form.TextBox");
+	
+	/* Set up configurable settings based on cookie default values */
+	var ircPopupH = '$!{ircPopupH}';
+	var ircPopupW = '$!{ircPopupW}';
+	var iframeH   = '$!{ircPopupIframe}';
+	var nick      = '$!{dotCMSIRCNick}';
+
+    setCookie = function() {
+		/* Get config field values */
+		var isValid = true;
+		var nickVal = document.getElementById('ircNick').value;
+		var popupW  = document.getElementById('popupW').value;
+		var popupH  = document.getElementById('popupH').value;
+		
+		if(!isAlpha(nickVal) || !isNumeric(popupW) || !isNumeric(popupH)) {
+			isValid = false;
+		}
+		
+		if(isValid) {
+			/* Default IRC Nickname */
+			nick = nickVal;
+			dojo.cookie("dotCMSIRCNick", nick, {
+				expires: 365
+			});
+			
+			/* Default Chat Window Popup Width */
+			ircPopupW = popupW;
+			dojo.cookie("ircPopupW", popupW, {
+				expires: 365
+			});
+			
+			/* Default Chat Window Popup Height */
+			ircPopupH = popupH;
+			iframeH   = ircPopupH - 22;
+			dojo.cookie("ircPopupH", popupH, {
+				expires: 365
+			});	
+			dijit.byId('optionsDiv').hide();
+		} else {
+			alert('Please check configuration settings');
+		}
+    };
+	
+	/* Open IRC chat popup window */
+	openIRCPopup = function() {
+		newwindow = window.open('','irc','height=' + ircPopupH + ',width=' + ircPopupW + ',resizable=0');
+		var tmp = newwindow.document;
+		tmp.write('<html><head><title>dotCMS IRC Client</title>');
+		tmp.write('</head><body style="margin:0;padding:10px;">');
+		tmp.write('<iframe style="width:100%;height:' + iframeH + 'px;border:1px solid #ccc;" src="http://webchat.freenode.net?nick=' + nick + '&channels=dotcms&uio=MTE9MjM20f"></iframe>');
+		tmp.write('</body></html>');
+		tmp.close();
+	};
+	
+	/* Open options popup */
+	showOptions = function() {
+		dijit.byId('optionsDiv').show();
+	};
+	
+	/* Open a collabedit popup */
+	collaborate = function() {
+		window.open('http://collabedit.com/new','collabedit','top=200,left=200,height=600,width=800,resizable=1,status=0,location=1,menubar=0,directories=0');
+	}
+	
+	/* Validator functions */
+	isNumeric = function(str) {
+		return str.match(/^\d+$/);
+	};
+	isAlpha = function(str) {
+		return str.match(/^[A-Za-z0-9_-]*$/);
+	}; 
+</script>
+
+<div class="subNavCrumbTrail">
+	<ul>
+		<li id="selectHostDiv" style="" onclick="window.location='/admin';"><img src="/html/images/icons/globe-grey.png" width="16" height="16" title="global page" align="absmiddle" hspace="5" />Home</li>
+		<li class="lastCrumb"><span>dotCMS IRC Chat</span></li>
+	</ul>
+	<div class="clear"></div>
+</div>  <!-- .subNavCrumbTrail -->
+<div class="clear"></div>
+
+<div id="ircContainer">
+	<iframe src="http://webchat.freenode.net?$!{enableNick}channels=dotcms&uio=MTE9MjM20f"></iframe>
+	
+	<div id="ircButtons">
+		<div id="credit">
+			Brought to you by <a href="http://learndotcms.com/" target="_blank">LearndotCMS.com</a>
+		</div>  <!-- ${esc.h}credit -->
+		
+		<button dojoType="dijit.form.Button" iconClass="browseIcon" onClick="openIRCPopup();" tabindex="0">Popout Chat</button> 
+		<button dojoType="dijit.form.Button" iconClass="publishIcon" onClick="collaborate();" tabindex="1">Collaborate</button> 
+		<button dojoType="dijit.form.Button" iconClass="editIcon" onClick="showOptions();" tabindex="2">Options</button>
+	</div>  <!-- ${esc.h}ircButtons -->
+</div>  <!-- ${esc.h}ircContainer -->
+
+<div id="optionsDiv" dojoType="dijit.Dialog" title="IRC Options" style="display:none;">
+	<p><label for="ircNick">Default Nickname:</label> <input type="text" name="ircNick" id="ircNick" tabindex="3" value="$!{dotCMSIRCNick}" /></p>
+	<p><label for="popupW">Popup Size:</label> <input type="text" name="popupW" id="popupW" tabindex="4" value="$!{ircPopupW}" placeholder="w" size="3" />px by <input type="text" name="popupH" id="popupH" tabindex="5 value="$!{ircPopupH}" placeholder="h" size="3" />px</p>
+	<div style="text-align:center;">
+		<button dojoType="dijit.form.Button" iconClass="saveIcon" onClick="setCookie();" tabindex="6">Save Options</button> 
+		<button dojoType="dijit.form.Button" iconClass="cancelIcon" onClick="dijit.byId('optionsDiv').hide();" tabindex="7">Cancel</button></div>
+	<div><small><em>Clear your cookies to reset IRC settings to their defaults.</em></small></div>
+</div>

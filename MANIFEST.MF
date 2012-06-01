@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Deploy-Class: 
+Plugin-Name: dotCMS IRC Channel Client
+Plugin-Version: 1.110106
+Author: Michael Fienen (http://learndotcms.com)
